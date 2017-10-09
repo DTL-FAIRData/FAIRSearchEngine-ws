@@ -59,8 +59,14 @@ import org.springframework.web.servlet.ModelAndView;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Vector;
+import java.util.logging.Level;
+import nl.dtls.fairsearchengine.service.FairFdpServiceManagerImpl;
+import nl.dtls.fairsearchengine.service.FairSearchServiceImpl;
 import nl.dtls.fairsearchengine.utils.esClient.JestESClient2;
+import org.springframework.http.HttpEntity;
 /*import nl.dtl.fairmetadata4j.io.MetadataException;
 import nl.dtl.fairmetadata4j.io.MetadataParserException;
 import nl.dtl.fairmetadata4j.model.Agent;
@@ -83,7 +89,11 @@ import nl.dtl.fairsearchengine.util.esClient.JestESClient;*/
 
 //import org.eclipse.rdf4j.rio.RDFFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.HandlerMapping;
 import springfox.documentation.annotations.ApiIgnore;
 
 
@@ -103,8 +113,11 @@ public class SearchController {
     private final static Logger LOGGER
             = LogManager.getLogger(SearchController.class);
     
-    //@Autowired
-   // private FairSearchService FairSearchService;
+    @Autowired
+    private FairSearchServiceImpl fairSearchService;
+    @Autowired
+    private FairFdpServiceManagerImpl fairFdpServiceManager;
+    
     private boolean isFDPMetaDataAvailable = false;
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -169,8 +182,8 @@ public class SearchController {
         return list;
     }
     
-        /**
-     * List indexed Fair Data Point
+    /**
+     * Submit Fair Data Point for indexin
      *
      * @return Metadata about the catalog in one of the acceptable formats (RDF
      * Turtle, JSON-LD, RDF XML and RDF N3)
@@ -178,15 +191,25 @@ public class SearchController {
      * @throws IllegalStateException
      * @throws FairSearchServiceException
      */
+    //TODO move to a different controller
     @ApiOperation(value = "Submit Fair Data Point for indexing")
     @RequestMapping(value = "/submitFdp",
                     method = RequestMethod.GET
     )
-    @ResponseStatus(HttpStatus.OK)
-    public void submitFdp(
+    @ResponseBody
+    public ResponseEntity submitFdp(
+        @RequestParam(value="fdp", defaultValue="") String fdp,
         HttpServletRequest request,
         HttpServletResponse response) throws FairSearchServiceException{
-    	
+        
+        try {
+            URI fpd = new URI(fdp);
+            this.fairFdpServiceManager.addFdp(fpd);
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);    
+        }
+        return new ResponseEntity(HttpStatus.ACCEPTED);    
     }
     
     /**
@@ -202,21 +225,31 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Raw search (returns ES response)")
-    @RequestMapping(value = "/rs/*", method = RequestMethod.GET,
-            produces = {"text/json",
-                "application/ld+json"}
-    )
+    @RequestMapping(value = {"/rs/**"})
     @ResponseStatus(HttpStatus.OK)
-    public String rawSearch(
-    		@RequestParam(value="rs", defaultValue="gene") String s, 
-            HttpServletRequest request,
-            HttpServletResponse response) throws FairSearchServiceException{          
+    @ResponseBody
+    public String rawSearch(@RequestBody(required=false)  String body, HttpMethod method, HttpServletRequest request,
+                             HttpServletResponse response) throws FairSearchServiceException{  
+          
+            String server = "localhost";
+            int port = 9200;        
 
-    		//String result = "test";
-    	    //ESClient esclient = new JestESClient();
-        //	String result = esclient.search(s);
-        	      
-        	return "raw";
+            URI uri;
+            
+            try {
+                String resource = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+                resource = resource.substring(4);
+                uri = new URI("http", null, server, port, request.getRequestURI(), request.getQueryString(), null);
+                 ResponseEntity<String> responseEntity =
+                   new RestTemplate().exchange(uri, method, new HttpEntity<String>(body), String.class);
+
+               return responseEntity.getBody();    
+               
+            } catch (URISyntaxException ex) {
+                java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            return "";
     }
     
     /**
