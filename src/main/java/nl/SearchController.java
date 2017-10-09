@@ -137,7 +137,7 @@ public class SearchController {
             HttpServletRequest request,
             HttpServletResponse response) throws FairSearchServiceException{
             
-    		//return doSearch(s, site);
+            //return doSearch(s, site);
                 
                 return null;
     }
@@ -155,28 +155,42 @@ public class SearchController {
     @ApiOperation(value = "Search")
     @RequestMapping(value = "/listIndexedFairDataPoints",
                     method = RequestMethod.GET
-    //                produces = "text/json" 
+//                    produces = "text/json" 
     )
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    //public String listIndexFairDataPoints(
     public List<String> getlistIndexFairDataPoints(
         HttpServletRequest request,
         HttpServletResponse response) throws FairSearchServiceException{
     		
     	JestESClient2 esclient = new JestESClient2();
     	List<String> list = esclient.listFairDataPoints();
-     	
-        //List<String> list;
-        //list = new Vector<String>();
-        //list.add("test");
     	
         return list;
-//        return "test2";
+    }
+    
+        /**
+     * List indexed Fair Data Point
+     *
+     * @return Metadata about the catalog in one of the acceptable formats (RDF
+     * Turtle, JSON-LD, RDF XML and RDF N3)
+     *
+     * @throws IllegalStateException
+     * @throws FairSearchServiceException
+     */
+    @ApiOperation(value = "Submit Fair Data Point for indexing")
+    @RequestMapping(value = "/submitFdp",
+                    method = RequestMethod.GET
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public void submitFdp(
+        HttpServletRequest request,
+        HttpServletResponse response) throws FairSearchServiceException{
+    	
     }
     
     /**
-     * Search for datasets
+     * Submit fair data 
      *
      * @param id
      * @param request
