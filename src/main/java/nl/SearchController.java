@@ -59,6 +59,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.util.Vector;
 import nl.dtls.fairsearchengine.utils.esClient.JestESClient2;
 /*import nl.dtl.fairmetadata4j.io.MetadataException;
 import nl.dtl.fairmetadata4j.io.MetadataParserException;
@@ -82,6 +83,7 @@ import nl.dtl.fairsearchengine.util.esClient.JestESClient;*/
 
 //import org.eclipse.rdf4j.rio.RDFFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.ResponseBody;
 import springfox.documentation.annotations.ApiIgnore;
 
 
@@ -135,7 +137,9 @@ public class SearchController {
             HttpServletRequest request,
             HttpServletResponse response) throws FairSearchServiceException{
             
-    		return doSearch(s, site);
+    		//return doSearch(s, site);
+                
+                return null;
     }
     
     
@@ -149,20 +153,26 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Search")
-    @RequestMapping(value = "/listIndexedFairDataPoints", method = RequestMethod.GET,
-            produces = {"text/json"}
+    @RequestMapping(value = "/listIndexedFairDataPoints",
+                    method = RequestMethod.GET
+    //                produces = "text/json" 
     )
     @ResponseStatus(HttpStatus.OK)
-    public  List<String> listIndexFairDataPoints(
-            HttpServletRequest request,
-            HttpServletResponse response) throws FairSearchServiceException{
+    @ResponseBody
+    //public String listIndexFairDataPoints(
+    public List<String> getlistIndexFairDataPoints(
+        HttpServletRequest request,
+        HttpServletResponse response) throws FairSearchServiceException{
     		
-                
-    		//JestESClient2 esclient = new JestESClient2();
-    		
-    		//List<String> list = esclient.listFairDataPoints();
+    	JestESClient2 esclient = new JestESClient2();
+    	List<String> list = esclient.listFairDataPoints();
      	
-    		return null;
+        //List<String> list;
+        //list = new Vector<String>();
+        //list.add("test");
+    	
+        return list;
+//        return "test2";
     }
     
     /**
