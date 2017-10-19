@@ -20,8 +20,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package nl.dtls.fairsearchengine.service;
 
-public class FairSearchServiceException extends Exception {
 
+package nl.dtls.fse.service;
+
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import org.eclipse.rdf4j.model.IRI;
+import org.springframework.stereotype.Component;
+
+/**
+ *
+ * @author nuno
+ */
+
+@Component
+public class FairFdpServiceManagerImpl {
+    
+   private static String fdpfile = "fdpfile.txt";
+  
+   //TODO create specific type of exception
+   public void addFdp(URI fdp) throws Exception{
+       try {
+            Files.write(Paths.get(fdpfile), fdp.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        }catch (IOException e) {
+            throw new Exception(e.getMessage(), e.fillInStackTrace());
+        }
+   }
+   
+   public void removeFdp(URI fdp){
+       throw new UnsupportedOperationException();
+   }
+    
+   public void redirect(URI fdp, URI newFdp){
+       throw new UnsupportedOperationException();
+   }
+   
 }

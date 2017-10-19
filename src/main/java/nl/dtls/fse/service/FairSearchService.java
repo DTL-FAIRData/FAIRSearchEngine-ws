@@ -1,3 +1,4 @@
+
 /**
  * The MIT License
  * Copyright © 2017 DTL
@@ -20,43 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-
-package nl.dtls.fairsearchengine.service;
-
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import org.eclipse.rdf4j.model.IRI;
-import org.springframework.stereotype.Component;
-
-/**
- *
- * @author nuno
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 
-@Component
-public class FairFdpServiceManagerImpl {
+package nl.dtls.fse.service;
+
+import nl.dtl.fairmetadata4j.io.MetadataException;
+import nl.dtl.fairmetadata4j.model.CatalogMetadata;
+import nl.dtl.fairmetadata4j.model.DatasetMetadata;
+import nl.dtl.fairmetadata4j.model.DistributionMetadata;
+import nl.dtl.fairmetadata4j.model.FDPMetadata;
+//import nl.dtls.fairsearchengine.searchresult.model.SearchResult;
+
+import org.eclipse.rdf4j.model.IRI;
+
+
+/**
+ * Fair metadata service interface
+ * 
+ * @version 0.2
+ */
+public interface FairSearchService {   
+        
+    /**
+     * Do a simple search
+     * 
+     * @param searchStringURI
+     * @return FairSearchServiceException object
+     * @throws FairSearchServiceException 
+     */
+//    SearchResult search(String searchString) 
+//            throws FairSearchServiceException; 
     
-   private static String fdpfile = "fdpfile.txt";
-  
-   //TODO create specific type of exception
-   public void addFdp(URI fdp) throws Exception{
-       try {
-            Files.write(Paths.get(fdpfile), fdp.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        }catch (IOException e) {
-            throw new Exception(e.getMessage(), e.fillInStackTrace());
-        }
-   }
-   
-   public void removeFdp(URI fdp){
-       throw new UnsupportedOperationException();
-   }
     
-   public void redirect(URI fdp, URI newFdp){
-       throw new UnsupportedOperationException();
-   }
-   
+    // list all webservices (add jets client)
+    // list all datasets with some give properties
+     
 }
+
+

@@ -20,26 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package nl.dtls.fairsearchengine.service;
+package nl.dtls.fse.service;
 
-import org.eclipse.rdf4j.model.IRI;
-import org.springframework.stereotype.Service;
-
-import nl.dtl.fairmetadata4j.io.MetadataException;
-import nl.dtl.fairmetadata4j.model.CatalogMetadata;
-import nl.dtl.fairmetadata4j.model.DatasetMetadata;
-import nl.dtl.fairmetadata4j.model.DistributionMetadata;
-import nl.dtl.fairmetadata4j.model.FDPMetadata;
-import org.springframework.stereotype.Component;
-//import nl.dtls.fairsearchengine.searchresult.model.SearchResult;
-
-@Component
-public class FairSearchServiceImpl implements FairSearchService {
-
-
-	public String search(String searchString) throws FairSearchServiceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+public class FairSearchServiceException extends Exception {
 
 }

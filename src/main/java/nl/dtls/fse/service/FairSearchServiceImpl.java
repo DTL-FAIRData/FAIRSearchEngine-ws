@@ -1,4 +1,3 @@
-
 /**
  * The MIT License
  * Copyright © 2017 DTL
@@ -21,45 +20,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+package nl.dtls.fse.service;
 
-package nl.dtls.fairsearchengine.service;
+import org.eclipse.rdf4j.model.IRI;
+import org.springframework.stereotype.Service;
 
 import nl.dtl.fairmetadata4j.io.MetadataException;
 import nl.dtl.fairmetadata4j.model.CatalogMetadata;
 import nl.dtl.fairmetadata4j.model.DatasetMetadata;
 import nl.dtl.fairmetadata4j.model.DistributionMetadata;
 import nl.dtl.fairmetadata4j.model.FDPMetadata;
+import org.springframework.stereotype.Component;
 //import nl.dtls.fairsearchengine.searchresult.model.SearchResult;
 
-import org.eclipse.rdf4j.model.IRI;
+@Component
+public class FairSearchServiceImpl implements FairSearchService {
 
 
-/**
- * Fair metadata service interface
- * 
- * @version 0.2
- */
-public interface FairSearchService {   
-        
-    /**
-     * Do a simple search
-     * 
-     * @param searchStringURI
-     * @return FairSearchServiceException object
-     * @throws FairSearchServiceException 
-     */
-//    SearchResult search(String searchString) 
-//            throws FairSearchServiceException; 
-    
-    
-    // list all webservices (add jets client)
-    // list all datasets with some give properties
-     
+	public String search(String searchString) throws FairSearchServiceException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
-
-
