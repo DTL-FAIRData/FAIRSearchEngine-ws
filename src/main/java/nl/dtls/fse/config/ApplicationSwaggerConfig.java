@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package nl;
+package nl.dtls.fse.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +45,7 @@ public class ApplicationSwaggerConfig {
     public Docket api(){
         return new Docket(DocumentationType.SWAGGER_2)
             .select()
-            //.apis(RequestHandlerSelectors.basePackage("nl.*"))
+            //.apis(RequestHandlerSelectors.basePackage("nl.dtls.fse.controller.*"))
             .paths(regex("/.*"))
             .build()
             .apiInfo(apiInfo());

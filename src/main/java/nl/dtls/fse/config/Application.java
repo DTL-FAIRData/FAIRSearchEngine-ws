@@ -21,12 +21,16 @@
  * THE SOFTWARE.
  */
 
-package nl;
+package nl.dtls.fse.config;
 
-/**
- *
- * @author nuno
- */
-class SearchDataset {
-    
+import nl.*;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+//@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 }

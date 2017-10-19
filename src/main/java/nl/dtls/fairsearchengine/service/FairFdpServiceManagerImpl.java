@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
  *
  * @author nuno
  */
+
 @Component
 public class FairFdpServiceManagerImpl {
     
@@ -49,5 +50,13 @@ public class FairFdpServiceManagerImpl {
             throw new Exception(e.getMessage(), e.fillInStackTrace());
         }
    }
+   
+   public void removeFdp(URI fdp){
+       throw new UnsupportedOperationException();
+   }
     
+   public void redirect(URI fdp, URI newFdp){
+       throw new UnsupportedOperationException();
+   }
+   
 }
