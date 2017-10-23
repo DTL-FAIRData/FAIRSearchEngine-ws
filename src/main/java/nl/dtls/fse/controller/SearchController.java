@@ -69,8 +69,8 @@ import javax.crypto.NoSuchPaddingException;
 import nl.dtls.fse.service.FairSearchServiceException;
 import nl.dtl.fairsearchengine.util.HttpURLConnect;
 import nl.dtls.fse.service.FairFdpServiceManagerImpl;
-import nl.dtls.fse.service.FairSearchServiceImpl;
 import nl.dtls.fairsearchengine.utils.esClient.JestESClient2;
+import nl.dtls.fse.model.FairDataPointElement;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpEntity;
 import nl.dtls.fse.model.SearchDataset;
@@ -116,8 +116,8 @@ public class SearchController {
     private final static Logger LOGGER
             = LogManager.getLogger(SearchController.class);
 
-    @Autowired
-    private FairSearchServiceImpl fairSearchService;
+    //@Autowired
+    //private FairSearchServiceImpl fairSearchService;
     @Autowired
     private FairFdpServiceManagerImpl fairFdpServiceManager;
 
@@ -185,12 +185,12 @@ public class SearchController {
     )
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<String> getlistIndexFairDataPoints(
+    public List<FairDataPointElement> getlistIndexFairDataPoints(
             HttpServletRequest request,
             HttpServletResponse response) throws FairSearchServiceException {
 
         JestESClient2 esclient = new JestESClient2();
-        List<String> list = esclient.listFairDataPoints();
+        List<FairDataPointElement> list = esclient.listFairDataPoints();
 
         return list;
     }
@@ -222,6 +222,7 @@ public class SearchController {
             java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
+           System.out.println("good");
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
@@ -307,7 +308,10 @@ public class SearchController {
                 IOUtils.copy(is, response.getOutputStream());
 
                 response.setContentType(contentType);
-                
+                //TODO in the future copy headers
+                response.setHeader("Access-Control-Allow-Origin", "*");
+                response.setHeader("Content-Type", "application/json; charset=UTF-8");
+
                 response.flushBuffer();
 
             } catch (UnsupportedEncodingException ex) {
