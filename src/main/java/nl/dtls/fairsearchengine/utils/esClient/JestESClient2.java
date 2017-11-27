@@ -37,6 +37,7 @@ import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import io.searchbox.indices.Analyze;
+import nl.dtls.fse.model.FairDataPointElement;
 
 public class JestESClient2 {
 	
@@ -44,7 +45,7 @@ public class JestESClient2 {
         }
 	
 	
-	public List<String> listFairDataPoints() {
+	public List<FairDataPointElement> listFairDataPoints() {
 		
 		//Request request = new Request.Builder().
 		//ejs.Request().size(0)
@@ -63,7 +64,9 @@ public class JestESClient2 {
 				"            \"terms\" : { \"field\" : \"FDPurl\" }\n" + 
 				"        }\n" + 
 				"    }\n" + 
-				"}";		
+				"}";	
+                
+                query = "{\"size\" : 0,  \n  \"aggs\": {\n    \"fdp\": {\n      \"terms\": {\n        \"field\": \"repositoryTitle.raw\"\n      },\n    \"aggs\": {\n        \"fdp2\": {\n          \"terms\": {\n            \"field\": \"FDPurl\"\n          },\n        \"aggs\": {\n          \"fdp3\": {\n           \"terms\": {\n             \"field\": \"updateTimestamp\"\n             }\n          }\n        }\n        }\n      }\n    \n    }\n  }\n}\n";
 		
 		SearchResult sr = null;
 		try {
@@ -75,20 +78,37 @@ public class JestESClient2 {
 	
 		
 		//List<String> tokenList = new Vector();
+                System.out.println(sr.getJsonString());
 		JsonObject json = sr.getJsonObject();
 		
 		///JsonArray jsonarray = json.getAsJsonObject("aggregations")
 		//		.getAsJsonObject("fdp")
 		//		.getAsJsonArray("buckets");	
 		
-		System.out.println(json.getAsJsonObject("aggregations").getAsJsonObject("fdplist").getAsJsonArray("buckets"));
+		//System.out.println(json.getAsJsonObject("aggregations").getAsJsonObject("fdplist").getAsJsonArray("buckets"));
 		
-		JsonArray jsonarray = json.getAsJsonObject("aggregations").getAsJsonObject("fdplist").getAsJsonArray("buckets");
+		JsonArray jsonarray = json.getAsJsonObject("aggregations").getAsJsonObject("fdp").getAsJsonArray("buckets");
 		
+                
+                
 		for(int i = 0; i < jsonarray.size(); i++) {
-			List<String> result = new Vector<String>();
+			List<FairDataPointElement> result = new Vector<FairDataPointElement>();
 			System.out.println(jsonarray.get(i).getAsJsonObject().get("key").getAsString());
-			result.add(jsonarray.get(i).getAsJsonObject().get("key").getAsString());
+			//result.add(new FairDataPointElement("name", jsonarray.get(i).getAsJsonObject().get("key").getAsString(), ""));
+                        
+                        String fdpUrl = jsonarray.get(i).getAsJsonObject().get("key").getAsString();
+                        
+                        //todo: create method to extract values, given a base object
+                        
+                        String fdpName = jsonarray.get(i).getAsJsonObject().getAsJsonObject("fdp2").getAsJsonArray("buckets").get(0).getAsJsonObject().get("key").getAsString();
+                        
+                        String lastUpdate = jsonarray.get(i).getAsJsonObject().getAsJsonObject("fdp2").getAsJsonArray("buckets").get(0).getAsJsonObject().getAsJsonObject("fdp3").getAsJsonArray("buckets").get(0).getAsJsonObject().get("key").getAsString();
+                       
+                        System.out.println(lastUpdate);
+                        
+                        result.add(new FairDataPointElement(fdpName, fdpUrl, lastUpdate));
+                        
+                        
 			return result;
 		}
 		

@@ -75,7 +75,7 @@ public class FairFdpServiceManagerImpl {
         try {
             if (onQueueSubmitProcess) {
                 Runtime rt = Runtime.getRuntime();
-                Process pr = rt.exec(queueProcess + " " + fdp.toString());
+                Process pr = rt.exec(queueProcess + " -f " + fdp.toString());
                 logOutput(pr);
             }
         } catch (IOException e) {

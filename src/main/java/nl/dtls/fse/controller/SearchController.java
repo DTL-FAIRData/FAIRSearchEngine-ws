@@ -222,7 +222,7 @@ public class SearchController {
             java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
-           System.out.println("good");
+       
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 

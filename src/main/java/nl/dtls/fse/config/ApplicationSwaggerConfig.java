@@ -45,6 +45,7 @@ public class ApplicationSwaggerConfig {
     public Docket api(){
         return new Docket(DocumentationType.SWAGGER_2)
             .select()
+            .apis(RequestHandlerSelectors.any())
             //.apis(RequestHandlerSelectors.basePackage("nl.dtls.fse.controller.*"))
             .paths(regex("/.*"))
             .build()

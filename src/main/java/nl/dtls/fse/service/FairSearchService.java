@@ -29,6 +29,7 @@
 
 package nl.dtls.fse.service;
 
+import javax.naming.directory.SearchResult;
 import nl.dtl.fairmetadata4j.io.MetadataException;
 import nl.dtl.fairmetadata4j.model.CatalogMetadata;
 import nl.dtl.fairmetadata4j.model.DatasetMetadata;
@@ -53,8 +54,8 @@ public interface FairSearchService {
      * @return FairSearchServiceException object
      * @throws FairSearchServiceException 
      */
-//    SearchResult search(String searchString) 
-//            throws FairSearchServiceException; 
+    SearchResult search(String searchString) 
+            throws FairSearchServiceException; 
     
     
     // list all webservices (add jets client)
