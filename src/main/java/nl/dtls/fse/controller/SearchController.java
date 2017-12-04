@@ -59,6 +59,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -98,6 +99,7 @@ import nl.dtl.fairsearchengine.util.esClient.JestESClient;*/
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.HandlerMapping;
@@ -109,6 +111,7 @@ import springfox.documentation.annotations.ApiIgnore;
  * @version 0.1
  */
 @Api(description = "Search API")
+//@CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/")
 @RestController
 public class SearchController {
@@ -133,8 +136,7 @@ public class SearchController {
      */
     @ApiOperation(value = "ping fdp queue")
     @RequestMapping(value = "/pingFdpQueue", method = RequestMethod.GET,
-            produces = {"text/json",
-                "application/ld+json"}
+            produces = {"text/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     public void pingFdpQueue() throws IOException{
@@ -156,8 +158,7 @@ public class SearchController {
      */
     @ApiOperation(value = "Search")
     @RequestMapping(value = "/s", method = RequestMethod.GET,
-            produces = {"text/json",
-                "application/ld+json"}
+            produces = {"text/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     public List<SearchDataset> search(
@@ -180,9 +181,7 @@ public class SearchController {
      */
     @ApiOperation(value = "Search")
     @RequestMapping(value = "/listIndexedFairDataPoints",
-            method = RequestMethod.GET
-    //                    produces = "text/json" 
-    )
+            method = RequestMethod.GET, produces = "text/json" )
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<FairDataPointElement> getlistIndexFairDataPoints(
@@ -207,8 +206,7 @@ public class SearchController {
     //TODO move to a different controller
     @ApiOperation(value = "Submit Fair Data Point for indexing")
     @RequestMapping(value = "/submitFdp",
-            method = RequestMethod.GET
-    )
+            method = RequestMethod.GET, produces = "text/json")
     @ResponseBody
     public ResponseEntity submitFdp(
             @RequestParam(value = "fdp", defaultValue = "") String fdp,
@@ -239,7 +237,7 @@ public class SearchController {
      */
     //TODO This operation was created to handle case of /rs/ path calls. A better alternative should be found
     @ApiOperation(value = "Raw search (returns ES response)")
-    @RequestMapping(value = {"/rs/"},  method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD})
+    @RequestMapping(value = {"/rs/"},  method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD}, produces = "text/json")
     @ResponseStatus(HttpStatus.OK)
     @ApiIgnore
     private void rawSearch2(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request,
@@ -248,6 +246,89 @@ public class SearchController {
             rawSearch(body, method, request, response, httpEntity);
         
     }
+    
+    /**
+     * Submit fair data
+     *
+     * @param id
+     * @param request
+     * @param response
+     * @return Metadata about the catalog in one of the acceptable formats (RDF
+     * Turtle, JSON-LD, RDF XML and RDF N3)
+     *
+     * @throws IllegalStateException
+     * @throws FairSearchServiceException
+     */
+    @ApiOperation(value = "Raw search (returns ES response)")
+    //@RequestMapping(value = {"/rs/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "text/json" */)
+    @RequestMapping(value = {"/rs/**"}, method = {RequestMethod.POST} /*, produces = "text/json" */)
+    @ResponseStatus(HttpStatus.OK)
+    //@ResponseBody
+    public void rawSearch(@RequestBody(required = true) String body, HttpMethod method, HttpServletRequest request,
+            HttpServletResponse response, HttpEntity<String> httpEntity) throws FairSearchServiceException, IOException, Exception {
+
+        String server = "http://localhost:9200/";
+        String jsonContent = "";
+        URI uri;
+        
+          try {
+              
+                           
+                String requestMethod = request.getMethod();
+                String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+                //String fragment = request.getAttribute(HandlerMapping.);
+                String query = request.getQueryString()==null ? "" : "?"+request.getQueryString() ;
+                //String requestBody = httpEntity.getBody()==null ? "" :  httpEntity.getBody();
+                String requestBody = body == null ? "" :  body;
+                
+                String esPath = "";
+                System.out.println(path);
+                if (path.length() > 4) {
+                    esPath = path.substring(4);
+                };
+                
+                String url = server + esPath + query;
+                
+                HttpURLConnect http = new HttpURLConnect();
+                http.setRequestBody(requestBody);
+                
+                InputStream is = null; //= http.getGetStream(server + esPath + query);
+                
+                if(requestMethod.equals("GET"))
+                    is = http.openInputStream(url, HttpURLConnect.GET);
+                else if(requestMethod.equals("POST"))
+                    is = http.openInputStream(url, HttpURLConnect.POST);
+                else if(requestMethod.equals("HEAD"))
+                    is = http.openInputStream(url, HttpURLConnect.HEAD);
+                             
+                //else return problem
+                StringWriter writer = new StringWriter();
+                IOUtils.copy(is, writer, "UTF-8");
+                jsonContent = writer.toString();
+                
+                String contentType = http.getContentType();
+
+
+                response.setContentType(contentType);
+                //TODO in the future copy headers
+                response.setHeader("Access-Control-Allow-Origin", "*");
+                //response.setHeader("Content-Type", "application/json; charset=UTF-8");
+                //response.setHeader("Content-Type", "application/json; charset=ISO-8859-1");
+                response.setContentLength(jsonContent.length());
+                response.setContentType("application/json; charset=UTF-8");
+                
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(jsonContent);
+                response.getWriter().flush();
+                response.getWriter().close();
+
+
+            } catch (UnsupportedEncodingException ex) {
+                java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+            
+    }
+
 
     
     /**
@@ -263,16 +344,16 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Raw search (returns ES response)")
-    @RequestMapping(value = {"/rs/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD})
+    @RequestMapping(value = {"/rss/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "text/json" */)
     @ResponseStatus(HttpStatus.OK)
     //@ResponseBody
-    public void rawSearch(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request,
+    public void rawSearchStream(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request,
             HttpServletResponse response, HttpEntity<String> httpEntity) throws FairSearchServiceException, IOException, Exception {
 
         String server = "http://localhost:9200/";
 
         URI uri;
-
+        
           try {
               
                            
@@ -310,7 +391,8 @@ public class SearchController {
                 response.setContentType(contentType);
                 //TODO in the future copy headers
                 response.setHeader("Access-Control-Allow-Origin", "*");
-                response.setHeader("Content-Type", "application/json; charset=UTF-8");
+                //response.setHeader("Content-Type", "application/json; charset=UTF-8");
+                response.setHeader("Content-Type", "application/json");
 
                 response.flushBuffer();
 
