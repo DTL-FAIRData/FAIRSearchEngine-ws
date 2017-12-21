@@ -55,8 +55,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
 /**
- *
+ * ElasticSearch client
+ * 
  * @author nuno
+ * @version 0.1
  */
 public class JestESClient2 {
 
@@ -66,7 +68,7 @@ public class JestESClient2 {
     JestClient client = null;
 
     /**
-     *
+     * Class constructor
      */
     public JestESClient2() {
         init();
@@ -74,6 +76,7 @@ public class JestESClient2 {
 
     private void init() {
         JestClientFactory factory = new JestClientFactory();
+        //TODO get URL from configuration file
         factory.setHttpClientConfig(new HttpClientConfig.Builder("http://localhost:9200")
                 .multiThreaded(true)
                 //Per default this implementation will create no more than 2 concurrent connections per given route
@@ -88,7 +91,7 @@ public class JestESClient2 {
     /**
      * Loads schema into elasticsearch
      * 
-     * @param elastic server json schema
+     * @param schema    string with json schema for elasticsearch
      * @throws IOException
      */
     public void loadSchema(String schema) throws IOException {
@@ -108,7 +111,7 @@ public class JestESClient2 {
     /**
      * Checks if elasticsearch is up
      * 
-     * @return
+     * @return  boolean depending on if the server can be contacted or not
      */
     public boolean isServerUp() {
         try {
@@ -133,7 +136,7 @@ public class JestESClient2 {
     /**
      * List of fair data points
      * 
-     * @return
+     * @return  list of fair data points with last update date
      */
     public List<FairDataPointElement> listFairDataPoints() {
 
