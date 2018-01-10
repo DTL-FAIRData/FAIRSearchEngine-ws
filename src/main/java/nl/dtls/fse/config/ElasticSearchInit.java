@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import nl.dtls.fairsearchengine.utils.esClient.JestESClient2;
 import org.apache.logging.log4j.LogManager;
@@ -60,7 +61,8 @@ public class ElasticSearchInit {
                 = LogManager.getLogger(ElasticSearchInit.class);
   @Autowired
   private ResourceLoader resourceLoader;
-
+  @Autowired 
+  private JestESClient2 jestClient;
   /**
   * Listens to ContentRefreshedEven (on start) and tries to load elastic search schema
   */
@@ -69,22 +71,16 @@ public class ElasticSearchInit {
             final int maxRetries = 10;  // maximum number of retries
             final int retryTimeout = 5; //seconds between loading retries
             Resource resource = resourceLoader.getResource("classpath:schema.es");
-            String schemaAcum = "";
+            String result = "";
             try {
                 InputStream is = resource.getInputStream();
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                String line = "";
-                while ((line = br.readLine()) != null) {
-                    schemaAcum = schemaAcum + line;
-                }
-                br.close();
-
+                result = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
             
-            final String schema = schemaAcum;
-            JestESClient2 jestClient = new JestESClient2();
+            final String schema = result;
+            //JestESClient2 jestClient = new JestESClient2();
             
             Thread schemaLoadThread = new Thread(() -> {
                 try {

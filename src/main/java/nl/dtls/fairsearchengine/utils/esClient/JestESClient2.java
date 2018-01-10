@@ -22,6 +22,9 @@
  */
 package nl.dtls.fairsearchengine.utils.esClient;
 
+
+import static org.elasticsearch.index.query.QueryBuilders.*;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
@@ -47,12 +50,14 @@ import java.util.logging.Level;
 import nl.dtls.fse.controller.SearchController;
 import nl.dtls.fse.model.FairDataPointElement;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Component;
 
 /**
  * ElasticSearch client
@@ -60,12 +65,13 @@ import org.springframework.core.io.ResourceLoader;
  * @author nuno
  * @version 0.1
  */
+@Component
 public class JestESClient2 {
 
     private final static Logger LOGGER
-            = LogManager.getLogger(JestESClient2.class);
+            = LoggerFactory.getLogger(JestESClient2.class);
 
-    JestClient client = null;
+    JestClient client;
 
     /**
      * Class constructor
@@ -158,6 +164,13 @@ public class JestESClient2 {
 
         query = "{\"size\" : 0,  \n  \"aggs\": {\n    \"fdp\": {\n      \"terms\": {\n        \"field\": \"repositoryTitle.raw\"\n      },\n    \"aggs\": {\n        \"fdp2\": {\n          \"terms\": {\n            \"field\": \"FDPurl\"\n          },\n        \"aggs\": {\n          \"fdp3\": {\n           \"terms\": {\n             \"field\": \"updateTimestamp\"\n             }\n          }\n        }\n        }\n      }\n    \n    }\n  }\n}\n";
 
+        //Search search = (Search) new Search.Builder(searchSourceBuilder.toString())
+        //                            // multiple index or types can be added.
+        //                            .addIndex("dataset")
+        //                            .addType("dataset")
+        //                            .build();
+        
+        
         System.out.println(query);
 
         SearchResult sr = null;
@@ -207,6 +220,7 @@ public class JestESClient2 {
                 .build();
 
         JestClient client = this.getJestClient();
+ 
 
         SearchResult result = client.execute(search);
 
