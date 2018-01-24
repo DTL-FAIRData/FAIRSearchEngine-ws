@@ -1,4 +1,6 @@
-  {          "dataset": {
+{
+        "mappings": {
+            "dataset": {
                 "properties": {
                     "FDPurl": {
                         "type": "string",
@@ -149,11 +151,12 @@
                         "type": "string",
                         "analyzer": "english"
                     },
-                    "updateTimestamp": {
+                    "lastUpdated": {
                       "type" : "date",
                       "format" : "epoch_second"
                     }
                 }
             }
+        }
 }
-   
+
