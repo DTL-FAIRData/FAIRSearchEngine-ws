@@ -39,6 +39,8 @@ import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
+import io.searchbox.core.search.aggregation.TermsAggregation;
+import io.searchbox.core.search.aggregation.TermsAggregation.Entry;
 import io.searchbox.indices.Analyze;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
@@ -113,7 +115,7 @@ public class JestESClient2 {
         if (indexExists()) {
             LOGGER.info("Index already exists. Schema not loaded.");
         } else {
-            LOGGER.info("Creating elasticsearch index and mapping.");
+            LOGGER.info("Creating elasticsearch index and mapping. "+schema);
             client.execute(new CreateIndex.Builder("dataset").build());
             client.execute(new PutMapping.Builder("dataset", "dataset", schema).build());
         }
@@ -172,7 +174,7 @@ public class JestESClient2 {
         
         System.out.println("search");
         System.out.println(searchSourceBuilder.toString());
-        System.out.println("endsearch");
+        System.out.println("middlesearch");
         
         String query = "{\n"
                 + "    \"size\" : 0,"
@@ -188,18 +190,39 @@ public class JestESClient2 {
         System.out.println(query);
 
         SearchResult sr = null;
-        try {
-           
-            sr = this.search(query);
+        try {      
+            sr = this.search(searchSourceBuilder.toString());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
-        sr.getAggregations().getAggregation("fdp", aggType)
+        TermsAggregation terms = sr.getAggregations().getTermsAggregation("fdp");
+        
+        System.out.println("meio");
+        System.out.println(sr.getJsonString());
+        
+        for (Entry element : terms.getBuckets() ) {
+            System.out.println(element.getKey());
+            TermsAggregation terms2 = element.getTermsAggregation("fdp2");
+            for(Entry element2 : terms2.getBuckets()){
+                System.out.println(" - " + element2.getKey());
+                
+                TermsAggregation terms3 = element2.getTermsAggregation("fpd3");
+                
+                if(terms3==null) System.out.println("nulllll");
+                else System.out.println("not null");
+                
+                for(Entry element3 : terms3.getBuckets()){
+                    System.out.println(" -- " + element3.getKey());
+                }
+            }
+        }
 
         //List<String> tokenList = new Vector();
         System.out.println(sr.getJsonString());
+        System.out.println("endsearch");
+          
         JsonObject json = sr.getJsonObject();
         
         ///JsonArray jsonarray = json.getAsJsonObject("aggregations")
