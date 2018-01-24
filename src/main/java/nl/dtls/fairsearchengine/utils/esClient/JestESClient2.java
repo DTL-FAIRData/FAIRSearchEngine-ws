@@ -50,6 +50,11 @@ import java.util.logging.Level;
 import nl.dtls.fse.controller.SearchController;
 import nl.dtls.fse.model.FairDataPointElement;
 import org.apache.logging.log4j.LogManager;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +63,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+
 
 /**
  * ElasticSearch client
@@ -152,7 +158,22 @@ public class JestESClient2 {
         //Analyze analyzer = new Analyze.Builder()
         //					.analyzer(analyser)
         //					.text(text)
-        //					.build();
+        //				.build();
+        
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        //searchSourceBuilder.aggregation(AggregationBuilders.
+        //                                    .global("agg")
+        //                                    .subAggregation(AggregationBuilders.terms("fdplist").field("FDPurl")));
+        
+        searchSourceBuilder.aggregation(AggregationBuilders
+                                          .terms("fdp").field("repositoryTitle.raw")
+                                          .subAggregation(AggregationBuilders.terms("fdp2").field("FDPurl")
+                                          .subAggregation(AggregationBuilders.terms("fdp3").field("updateTimestamp"))));
+        
+        System.out.println("search");
+        System.out.println(searchSourceBuilder.toString());
+        System.out.println("endsearch");
+        
         String query = "{\n"
                 + "    \"size\" : 0,"
                 + "    \"aggs\" : {\n"
@@ -163,28 +184,24 @@ public class JestESClient2 {
                 + "}";
 
         query = "{\"size\" : 0,  \n  \"aggs\": {\n    \"fdp\": {\n      \"terms\": {\n        \"field\": \"repositoryTitle.raw\"\n      },\n    \"aggs\": {\n        \"fdp2\": {\n          \"terms\": {\n            \"field\": \"FDPurl\"\n          },\n        \"aggs\": {\n          \"fdp3\": {\n           \"terms\": {\n             \"field\": \"updateTimestamp\"\n             }\n          }\n        }\n        }\n      }\n    \n    }\n  }\n}\n";
-
-        //Search search = (Search) new Search.Builder(searchSourceBuilder.toString())
-        //                            // multiple index or types can be added.
-        //                            .addIndex("dataset")
-        //                            .addType("dataset")
-        //                            .build();
-        
-        
+                
         System.out.println(query);
 
         SearchResult sr = null;
         try {
+           
             sr = this.search(query);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
+        sr.getAggregations().getAggregation("fdp", aggType)
+
         //List<String> tokenList = new Vector();
         System.out.println(sr.getJsonString());
         JsonObject json = sr.getJsonObject();
-
+        
         ///JsonArray jsonarray = json.getAsJsonObject("aggregations")
         //		.getAsJsonObject("fdp")
         //		.getAsJsonArray("buckets");	
@@ -218,6 +235,7 @@ public class JestESClient2 {
                 .addIndex("dataset")
                 .addType("dataset")
                 .build();
+
 
         JestClient client = this.getJestClient();
  
