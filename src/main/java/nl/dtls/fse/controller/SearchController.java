@@ -185,6 +185,7 @@ public class SearchController {
     @RequestMapping(value = "/listIndexedFairDataPoints",
             method = RequestMethod.GET, produces = {"text/json"} )
     @ResponseStatus(HttpStatus.OK)
+//  public @ResponseBody List<FairDataPointElement> getlistIndexFairDataPoints(
     public @ResponseBody String getlistIndexFairDataPoints(
             HttpServletRequest request,
             HttpServletResponse response) throws FairSearchServiceException {
