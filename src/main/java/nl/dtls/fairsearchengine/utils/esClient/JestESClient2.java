@@ -48,6 +48,7 @@ import io.searchbox.indices.mapping.PutMapping;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import nl.dtls.fse.controller.SearchController;
 import nl.dtls.fse.model.FairDataPointElement;
@@ -153,41 +154,14 @@ public class JestESClient2 {
      * @return  list of fair data points with last update date
      */
     public List<FairDataPointElement> listFairDataPoints() {
-
-        //Request request = new Request.Builder().
-        //ejs.Request().size(0)
-        //	.agg( ejs.TermsAggregation('test').field('FDPurl'));
-        //Analyze analyzer = new Analyze.Builder()
-        //					.analyzer(analyser)
-        //					.text(text)
-        //				.build();
         
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        //searchSourceBuilder.aggregation(AggregationBuilders.
-        //                                    .global("agg")
-        //                                    .subAggregation(AggregationBuilders.terms("fdplist").field("FDPurl")));
-        
+      
         searchSourceBuilder.aggregation(AggregationBuilders
                                           .terms("fdp").field("repositoryTitle.raw")
                                           .subAggregation(AggregationBuilders.terms("fdp2").field("FDPurl")
                                           .subAggregation(AggregationBuilders.terms("fdp3").field("updateTimestamp"))));
-        
-        System.out.println("search");
-        System.out.println(searchSourceBuilder.toString());
-        System.out.println("middlesearch");
-        
-        String query = "{\n"
-                + "    \"size\" : 0,"
-                + "    \"aggs\" : {\n"
-                + "        \"fdplist\" : {\n"
-                + "            \"terms\" : { \"field\" : \"FDPurl\" }\n"
-                + "        }\n"
-                + "    }\n"
-                + "}";
-
-        query = "{\"size\" : 0,  \n  \"aggs\": {\n    \"fdp\": {\n      \"terms\": {\n        \"field\": \"repositoryTitle.raw\"\n      },\n    \"aggs\": {\n        \"fdp2\": {\n          \"terms\": {\n            \"field\": \"FDPurl\"\n          },\n        \"aggs\": {\n          \"fdp3\": {\n           \"terms\": {\n             \"field\": \"updateTimestamp\"\n             }\n          }\n        }\n        }\n      }\n    \n    }\n  }\n}\n";
-                
-        System.out.println(query);
+               
 
         SearchResult sr = null;
         try {      
@@ -199,56 +173,22 @@ public class JestESClient2 {
 
         TermsAggregation terms = sr.getAggregations().getTermsAggregation("fdp");
         
-        System.out.println("meio");
-        System.out.println(sr.getJsonString());
+        List<FairDataPointElement> result = new ArrayList<FairDataPointElement>();
         
-        for (Entry element : terms.getBuckets() ) {
-            System.out.println(element.getKey());
-            TermsAggregation terms2 = element.getTermsAggregation("fdp2");
-            for(Entry element2 : terms2.getBuckets()){
-                System.out.println(" - " + element2.getKey());
-                                
-               
-                TermsAggregation terms3 = element2.getTermsAggregation("fdp3");
-                
-                if(terms3==null) System.out.println("nulllll"+element2.getCount());
-                    else System.out.println("not null");
-                
-                for(Entry element3 : terms3.getBuckets()){
-                    System.out.println(" -- " + element3.getKey());
-                }
-            }
-        }
-
-        //List<String> tokenList = new Vector();
-        System.out.println(sr.getJsonString());
-        System.out.println("endsearch");
-          
-        JsonObject json = sr.getJsonObject();
-        
-        ///JsonArray jsonarray = json.getAsJsonObject("aggregations")
-        //		.getAsJsonObject("fdp")
-        //		.getAsJsonArray("buckets");	
-        //System.out.println(json.getAsJsonObject("aggregations").getAsJsonObject("fdplist").getAsJsonArray("buckets"));
-        JsonArray jsonarray = json.getAsJsonObject("aggregations").getAsJsonObject("fdp").getAsJsonArray("buckets");
-
-        List<FairDataPointElement> result = new Vector<FairDataPointElement>();
-
-        for (int i = 0; i < jsonarray.size(); i++) {
-
-            System.out.println(jsonarray.get(i).getAsJsonObject().get("key").getAsString());
-            //result.add(new FairDataPointElement("name", jsonarray.get(i).getAsJsonObject().get("key").getAsString(), ""));
-
-            String fdpName = jsonarray.get(i).getAsJsonObject().get("key").getAsString();
-
-            //todo: create method to extract values, given a base object
-            String fdpUrl = jsonarray.get(i).getAsJsonObject().getAsJsonObject("fdp2").getAsJsonArray("buckets").get(0).getAsJsonObject().get("key").getAsString();
-            String lastUpdate = jsonarray.get(i).getAsJsonObject().getAsJsonObject("fdp2").getAsJsonArray("buckets").get(0).getAsJsonObject().getAsJsonObject("fdp3").getAsJsonArray("buckets").get(0).getAsJsonObject().get("key").getAsString();
-            System.out.println(lastUpdate + " " + fdpUrl + " " + fdpName);
+        for (Entry entry_level1 : terms.getBuckets() ) {
+            String fdpName = entry_level1.getKey();
+            
+            TermsAggregation terms2 = entry_level1.getTermsAggregation("fdp2");
+            Entry entry_level2 =  terms2.getBuckets().get(0);
+            String fdpUrl = entry_level2.getKey();
+            
+            TermsAggregation terms3 = entry_level2.getTermsAggregation("fdp3");
+            Entry entry_level3 = terms3.getBuckets().get(0);
+            String lastUpdate = entry_level3.getKey();
+            
             result.add(new FairDataPointElement(fdpName, fdpUrl, lastUpdate));
-            System.err.println("returning..");
         }
-
+        
         //System.out.println("Data: "+json.toString());
         return result;
     }
