@@ -207,11 +207,12 @@ public class JestESClient2 {
             TermsAggregation terms2 = element.getTermsAggregation("fdp2");
             for(Entry element2 : terms2.getBuckets()){
                 System.out.println(" - " + element2.getKey());
+                                
+               
+                TermsAggregation terms3 = element2.getTermsAggregation("fdp3");
                 
-                TermsAggregation terms3 = element2.getTermsAggregation("fpd3");
-                
-                if(terms3==null) System.out.println("nulllll");
-                else System.out.println("not null");
+                if(terms3==null) System.out.println("nulllll"+element2.getCount());
+                    else System.out.println("not null");
                 
                 for(Entry element3 : terms3.getBuckets()){
                     System.out.println(" -- " + element3.getKey());
