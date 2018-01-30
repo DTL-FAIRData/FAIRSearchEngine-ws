@@ -193,14 +193,6 @@ public class SearchController {
         JestESClient2 esclient = new JestESClient2();
         List<FairDataPointElement> list = esclient.listFairDataPoints();
         
-        Enumeration header = request.getHeaderNames();
-        while( header.hasMoreElements()) {
-            Object headers = header.nextElement();
-            System.out.println(headers);
-            String headern = request.getHeader(headers.toString());
-            System.out.println("     "+headern);
-        }
-        
         //return list;
         Gson gson = new Gson();
         return gson.toJson(list);
