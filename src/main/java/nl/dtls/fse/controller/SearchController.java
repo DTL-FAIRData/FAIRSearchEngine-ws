@@ -28,6 +28,7 @@
 //before nl.dtls.fairsearchengine.api.controller
 package nl.dtls.fse.controller;
 
+import com.google.gson.Gson;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -64,6 +65,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Enumeration;
 import java.util.Vector;
 import java.util.logging.Level;
 import javax.crypto.NoSuchPaddingException;
@@ -181,18 +183,29 @@ public class SearchController {
      */
     @ApiOperation(value = "Search")
     @RequestMapping(value = "/listIndexedFairDataPoints",
-            method = RequestMethod.GET, produces = "text/json" )
+            method = RequestMethod.GET, produces = {"text/json"} )
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public List<FairDataPointElement> getlistIndexFairDataPoints(
+//  public @ResponseBody List<FairDataPointElement> getlistIndexFairDataPoints(
+    public @ResponseBody String getlistIndexFairDataPoints(
             HttpServletRequest request,
             HttpServletResponse response) throws FairSearchServiceException {
 
         JestESClient2 esclient = new JestESClient2();
         List<FairDataPointElement> list = esclient.listFairDataPoints();
-
-        return list;
+        
+        Enumeration header = request.getHeaderNames();
+        while( header.hasMoreElements()) {
+            Object headers = header.nextElement();
+            System.out.println(headers);
+            String headern = request.getHeader(headers.toString());
+            System.out.println("     "+headern);
+        }
+        
+        //return list;
+        Gson gson = new Gson();
+        return gson.toJson(list);
     }
+    
 
     /**
      * Submit Fair Data Point for indexing
