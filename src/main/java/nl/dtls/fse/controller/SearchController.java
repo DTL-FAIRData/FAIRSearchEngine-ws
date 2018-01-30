@@ -28,7 +28,7 @@
 //before nl.dtls.fairsearchengine.api.controller
 package nl.dtls.fse.controller;
 
-import com.google.gson.Gson;
+//import com.google.gson.Gson;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -65,6 +65,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -138,7 +139,7 @@ public class SearchController {
      */
     @ApiOperation(value = "ping fdp queue")
     @RequestMapping(value = "/pingFdpQueue", method = RequestMethod.GET,
-            produces = {"text/json"}
+            produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     public void pingFdpQueue() throws IOException{
@@ -160,7 +161,7 @@ public class SearchController {
      */
     @ApiOperation(value = "Search")
     @RequestMapping(value = "/s", method = RequestMethod.GET,
-            produces = {"text/json"}
+            produces = {"application/json"}
     )
     @ResponseStatus(HttpStatus.OK)
     public List<SearchDataset> search(
@@ -183,19 +184,24 @@ public class SearchController {
      */
     @ApiOperation(value = "Search")
     @RequestMapping(value = "/listIndexedFairDataPoints",
-            method = RequestMethod.GET, produces = {"text/json"} )
+            method = RequestMethod.GET, produces = {"application/json"} )
     @ResponseStatus(HttpStatus.OK)
-//  public @ResponseBody List<FairDataPointElement> getlistIndexFairDataPoints(
-    public @ResponseBody String getlistIndexFairDataPoints(
+    public @ResponseBody List<FairDataPointElement> getlistIndexFairDataPoints(
             HttpServletRequest request,
             HttpServletResponse response) throws FairSearchServiceException {
-
-        JestESClient2 esclient = new JestESClient2();
-        List<FairDataPointElement> list = esclient.listFairDataPoints();
         
-        //return list;
-        Gson gson = new Gson();
-        return gson.toJson(list);
+        List<FairDataPointElement> list = new ArrayList();
+        try{
+        
+            JestESClient2 esclient = new JestESClient2();
+            list = esclient.listFairDataPoints();
+        
+        } catch(Exception e){
+            System.out.println(e);
+        }
+        return list;
+        //Gson gson = new Gson();
+        //return gson.toJson(list);
     }
     
 
@@ -211,7 +217,7 @@ public class SearchController {
     //TODO move to a different controller
     @ApiOperation(value = "Submit Fair Data Point for indexing")
     @RequestMapping(value = "/submitFdp",
-            method = RequestMethod.GET, produces = "text/json")
+            method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity submitFdp(
             @RequestParam(value = "fdp", defaultValue = "") String fdp,
@@ -242,7 +248,7 @@ public class SearchController {
      */
     //TODO This operation was created to handle case of /rs/ path calls. A better alternative should be found
     @ApiOperation(value = "Raw search (returns ES response)")
-    @RequestMapping(value = {"/rs/"},  method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD}, produces = "text/json")
+    @RequestMapping(value = {"/rs/"},  method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD}, produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     @ApiIgnore
     private void rawSearch2(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request,
@@ -265,8 +271,8 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Raw search (returns ES response)")
-    //@RequestMapping(value = {"/rs/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "text/json" */)
-    @RequestMapping(value = {"/rs/**"}, method = {RequestMethod.POST} /*, produces = "text/json" */)
+    //@RequestMapping(value = {"/rs/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "application/json" */)
+    @RequestMapping(value = {"/rs/**"}, method = {RequestMethod.POST} /*, produces = "application/json" */)
     @ResponseStatus(HttpStatus.OK)
     //@ResponseBody
     public void rawSearch(@RequestBody(required = true) String body, HttpMethod method, HttpServletRequest request,
@@ -349,7 +355,7 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Raw search (returns ES response)")
-    @RequestMapping(value = {"/rss/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "text/json" */)
+    @RequestMapping(value = {"/rss/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "application/json" */)
     @ResponseStatus(HttpStatus.OK)
     //@ResponseBody
     public void rawSearchStream(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request,
@@ -420,7 +426,7 @@ public class SearchController {
          */
         @ApiOperation(value = "Word suggestion")
         @RequestMapping(value = "/ws", method = RequestMethod.GET,
-                produces = {"text/json",
+                produces = {"application/json",
                     "application/ld+json"}
         )
         @ResponseStatus(HttpStatus.OK)
