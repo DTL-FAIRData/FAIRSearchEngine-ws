@@ -140,9 +140,7 @@ public class SearchController {
      *
      */
     @ApiOperation(value = "ping fdp queue")
-    @RequestMapping(value = "/pingFdpQueue", method = RequestMethod.GET,
-            produces = {"application/json"}
-    )
+    @RequestMapping(value = "/pingFdpQueue", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public void pingFdpQueue() throws IOException {
         Runtime rt = Runtime.getRuntime();
@@ -162,8 +160,7 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Search")
-    @RequestMapping(value = "/s", method = RequestMethod.GET,
-            produces = {"application/json"}
+    @RequestMapping(value = "/s", method = RequestMethod.GET
     )
     @ResponseStatus(HttpStatus.OK)
     public List<SearchDataset> search(
@@ -186,7 +183,7 @@ public class SearchController {
      */
     @ApiOperation(value = "Search")
     @RequestMapping(value = "/listIndexedFairDataPoints",
-            method = RequestMethod.GET, produces = {"application/json"})
+            method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody
     List<FairDataPointElement> getlistIndexFairDataPoints(
@@ -214,7 +211,7 @@ public class SearchController {
     //TODO move to a different controller
     @ApiOperation(value = "Submit Fair Data Point for indexing")
     @RequestMapping(value = "/submitFdp",
-            method = RequestMethod.GET, produces = "application/json")
+            method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity submitFdp(
             @RequestParam(value = "fdp", defaultValue = "") String fdp,
@@ -245,7 +242,7 @@ public class SearchController {
      */
     //TODO This operation was created to handle case of /rs/ path calls. A better alternative should be found
     @ApiOperation(value = "Raw search (returns ES response)")
-    @RequestMapping(value = {"/rs/"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD}, produces = "application/json")
+    @RequestMapping(value = {"/rs/"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD})
     @ResponseStatus(HttpStatus.OK)
     @ApiIgnore
     private void rawSearch2(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request,
@@ -417,9 +414,7 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Word suggestion")
-    @RequestMapping(value = "/ws", method = RequestMethod.GET,
-            produces = {"application/json",
-                "application/ld+json"}
+    @RequestMapping(value = "/ws", method = RequestMethod.GET
     )
     @ResponseStatus(HttpStatus.OK)
     public String wordSuggest(
