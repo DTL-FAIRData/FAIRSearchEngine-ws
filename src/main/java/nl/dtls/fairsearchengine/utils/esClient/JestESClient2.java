@@ -68,7 +68,7 @@ import org.springframework.stereotype.Component;
  * ElasticSearch client
  * 
  * @author nuno
- * @version 0.1
+ * @version 0.2
  */
 @Component
 public class JestESClient2 {

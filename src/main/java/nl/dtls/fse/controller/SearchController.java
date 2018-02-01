@@ -28,7 +28,7 @@
 //before nl.dtls.fairsearchengine.api.controller
 package nl.dtls.fse.controller;
 
-import com.google.gson.Gson;
+//import com.google.gson.Gson;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -65,6 +65,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -125,6 +126,8 @@ public class SearchController {
     //private FairSearchServiceImpl fairSearchService;
     @Autowired
     private FairFdpServiceManagerImpl fairFdpServiceManager;
+    @Autowired
+    private JestESClient2 esclient;
 
     private boolean isFDPMetaDataAvailable = false;
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -132,20 +135,18 @@ public class SearchController {
     public SearchController() {
         LOGGER.info("Hello world");
     }
-    
+
     /**
-     * 
+     *
      */
     @ApiOperation(value = "ping fdp queue")
-    @RequestMapping(value = "/pingFdpQueue", method = RequestMethod.GET,
-            produces = {"text/json"}
-    )
+    @RequestMapping(value = "/pingFdpQueue", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-    public void pingFdpQueue() throws IOException{
-           Runtime rt = Runtime.getRuntime();
-           Process ps = rt.exec("/ping");
+    public void pingFdpQueue() throws IOException {
+        Runtime rt = Runtime.getRuntime();
+        Process ps = rt.exec("/ping");
     }
-    
+
     /**
      * Search for datasets
      *
@@ -159,8 +160,7 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Search")
-    @RequestMapping(value = "/s", method = RequestMethod.GET,
-            produces = {"text/json"}
+    @RequestMapping(value = "/s", method = RequestMethod.GET
     )
     @ResponseStatus(HttpStatus.OK)
     public List<SearchDataset> search(
@@ -183,29 +183,21 @@ public class SearchController {
      */
     @ApiOperation(value = "Search")
     @RequestMapping(value = "/listIndexedFairDataPoints",
-            method = RequestMethod.GET, produces = {"text/json"} )
+            method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-//  public @ResponseBody List<FairDataPointElement> getlistIndexFairDataPoints(
-    public @ResponseBody String getlistIndexFairDataPoints(
+    public @ResponseBody
+    List<FairDataPointElement> getlistIndexFairDataPoints(
             HttpServletRequest request,
             HttpServletResponse response) throws FairSearchServiceException {
 
-        JestESClient2 esclient = new JestESClient2();
-        List<FairDataPointElement> list = esclient.listFairDataPoints();
-        
-        Enumeration header = request.getHeaderNames();
-        while( header.hasMoreElements()) {
-            Object headers = header.nextElement();
-            System.out.println(headers);
-            String headern = request.getHeader(headers.toString());
-            System.out.println("     "+headern);
+        List<FairDataPointElement> list = new ArrayList();
+        try {
+            list = this.esclient.listFairDataPoints();
+        } catch (Exception e) {
+            java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, e);
         }
-        
-        //return list;
-        Gson gson = new Gson();
-        return gson.toJson(list);
+        return list;
     }
-    
 
     /**
      * Submit Fair Data Point for indexing
@@ -219,7 +211,7 @@ public class SearchController {
     //TODO move to a different controller
     @ApiOperation(value = "Submit Fair Data Point for indexing")
     @RequestMapping(value = "/submitFdp",
-            method = RequestMethod.GET, produces = "text/json")
+            method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity submitFdp(
             @RequestParam(value = "fdp", defaultValue = "") String fdp,
@@ -233,7 +225,7 @@ public class SearchController {
             java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
-       
+
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
@@ -246,20 +238,20 @@ public class SearchController {
      * @param httpEntity
      * @throws FairSearchServiceException
      * @throws IOException
-     * @throws Exception 
+     * @throws Exception
      */
     //TODO This operation was created to handle case of /rs/ path calls. A better alternative should be found
     @ApiOperation(value = "Raw search (returns ES response)")
-    @RequestMapping(value = {"/rs/"},  method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD}, produces = "text/json")
+    @RequestMapping(value = {"/rs/"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD})
     @ResponseStatus(HttpStatus.OK)
     @ApiIgnore
     private void rawSearch2(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request,
             HttpServletResponse response, HttpEntity<String> httpEntity) throws FairSearchServiceException, IOException, Exception {
-            
-            rawSearch(body, method, request, response, httpEntity);
-        
+
+        rawSearch(body, method, request, response, httpEntity);
+
     }
-    
+
     /**
      * Submit fair data
      *
@@ -273,8 +265,8 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Raw search (returns ES response)")
-    //@RequestMapping(value = {"/rs/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "text/json" */)
-    @RequestMapping(value = {"/rs/**"}, method = {RequestMethod.POST} /*, produces = "text/json" */)
+    //@RequestMapping(value = {"/rs/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "application/json" */)
+    @RequestMapping(value = {"/rs/**"}, method = {RequestMethod.POST} /*, produces = "application/json" */)
     @ResponseStatus(HttpStatus.OK)
     //@ResponseBody
     public void rawSearch(@RequestBody(required = true) String body, HttpMethod method, HttpServletRequest request,
@@ -283,67 +275,63 @@ public class SearchController {
         String server = "http://localhost:9200/";
         String jsonContent = "";
         URI uri;
-        
-          try {
-              
-                           
-                String requestMethod = request.getMethod();
-                String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
-                //String fragment = request.getAttribute(HandlerMapping.);
-                String query = request.getQueryString()==null ? "" : "?"+request.getQueryString() ;
-                //String requestBody = httpEntity.getBody()==null ? "" :  httpEntity.getBody();
-                String requestBody = body == null ? "" :  body;
-                
-                String esPath = "";
-                System.out.println(path);
-                if (path.length() > 4) {
-                    esPath = path.substring(4);
-                };
-                
-                String url = server + esPath + query;
-                
-                HttpURLConnect http = new HttpURLConnect();
-                http.setRequestBody(requestBody);
-                
-                InputStream is = null; //= http.getGetStream(server + esPath + query);
-                
-                if(requestMethod.equals("GET"))
-                    is = http.openInputStream(url, HttpURLConnect.GET);
-                else if(requestMethod.equals("POST"))
-                    is = http.openInputStream(url, HttpURLConnect.POST);
-                else if(requestMethod.equals("HEAD"))
-                    is = http.openInputStream(url, HttpURLConnect.HEAD);
-                             
-                //else return problem
-                StringWriter writer = new StringWriter();
-                IOUtils.copy(is, writer, "UTF-8");
-                jsonContent = writer.toString();
-                
-                String contentType = http.getContentType();
 
+        try {
 
-                response.setContentType(contentType);
-                //TODO in the future copy headers
-                response.setHeader("Access-Control-Allow-Origin", "*");
-                //response.setHeader("Content-Type", "application/json; charset=UTF-8");
-                //response.setHeader("Content-Type", "application/json; charset=ISO-8859-1");
-                response.setContentLength(jsonContent.length());
-                response.setContentType("application/json; charset=UTF-8");
-                
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(jsonContent);
-                response.getWriter().flush();
-                response.getWriter().close();
+            String requestMethod = request.getMethod();
+            String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+            //String fragment = request.getAttribute(HandlerMapping.);
+            String query = request.getQueryString() == null ? "" : "?" + request.getQueryString();
+            //String requestBody = httpEntity.getBody()==null ? "" :  httpEntity.getBody();
+            String requestBody = body == null ? "" : body;
 
+            String esPath = "";
+            System.out.println(path);
+            if (path.length() > 4) {
+                esPath = path.substring(4);
+            };
 
-            } catch (UnsupportedEncodingException ex) {
-                java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
-            } 
-            
+            String url = server + esPath + query;
+
+            HttpURLConnect http = new HttpURLConnect();
+            http.setRequestBody(requestBody);
+
+            InputStream is = null; //= http.getGetStream(server + esPath + query);
+
+            if (requestMethod.equals("GET")) {
+                is = http.openInputStream(url, HttpURLConnect.GET);
+            } else if (requestMethod.equals("POST")) {
+                is = http.openInputStream(url, HttpURLConnect.POST);
+            } else if (requestMethod.equals("HEAD")) {
+                is = http.openInputStream(url, HttpURLConnect.HEAD);
+            }
+
+            //else return problem
+            StringWriter writer = new StringWriter();
+            IOUtils.copy(is, writer, "UTF-8");
+            jsonContent = writer.toString();
+
+            String contentType = http.getContentType();
+
+            response.setContentType(contentType);
+            //TODO in the future copy headers
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            //response.setHeader("Content-Type", "application/json; charset=UTF-8");
+            //response.setHeader("Content-Type", "application/json; charset=ISO-8859-1");
+            response.setContentLength(jsonContent.length());
+            response.setContentType("application/json; charset=UTF-8");
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write(jsonContent);
+            response.getWriter().flush();
+            response.getWriter().close();
+
+        } catch (UnsupportedEncodingException ex) {
+            java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
-
-    
     /**
      * Submit fair data
      *
@@ -357,7 +345,7 @@ public class SearchController {
      * @throws FairSearchServiceException
      */
     @ApiOperation(value = "Raw search (returns ES response)")
-    @RequestMapping(value = {"/rss/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "text/json" */)
+    @RequestMapping(value = {"/rss/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD} /*, produces = "application/json" */)
     @ResponseStatus(HttpStatus.OK)
     //@ResponseBody
     public void rawSearchStream(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request,
@@ -366,90 +354,81 @@ public class SearchController {
         String server = "http://localhost:9200/";
 
         URI uri;
-        
-          try {
-              
-                           
-                String requestMethod = request.getMethod();
-                String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
-                //String fragment = request.getAttribute(HandlerMapping.);
-                String query = request.getQueryString()==null ? "" : "?"+request.getQueryString() ;
-                String requestBody = httpEntity.getBody()==null ? "" :  httpEntity.getBody();
-                
-                String esPath = "";
-                if (path.length() > 4) {
-                    esPath = path.substring(4);
-                };
-                
-                String url = server + esPath + query;
-                
-                HttpURLConnect http = new HttpURLConnect();
-                http.setRequestBody(requestBody);
-                
-                InputStream is = null; //= http.getGetStream(server + esPath + query);
-                
-                if(requestMethod.equals("GET"))
-                    is = http.openInputStream(url, HttpURLConnect.GET);
-                else if(requestMethod.equals("POST"))
-                    is = http.openInputStream(url, HttpURLConnect.POST);
-                else if(requestMethod.equals("HEAD"))
-                    is = http.openInputStream(url, HttpURLConnect.HEAD);
-                             
-                //else return problem
 
-                String contentType = http.getContentType();
+        try {
 
-                IOUtils.copy(is, response.getOutputStream());
+            String requestMethod = request.getMethod();
+            String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+            //String fragment = request.getAttribute(HandlerMapping.);
+            String query = request.getQueryString() == null ? "" : "?" + request.getQueryString();
+            String requestBody = httpEntity.getBody() == null ? "" : httpEntity.getBody();
 
-                response.setContentType(contentType);
-                //TODO in the future copy headers
-                response.setHeader("Access-Control-Allow-Origin", "*");
-                //response.setHeader("Content-Type", "application/json; charset=UTF-8");
-                response.setHeader("Content-Type", "application/json");
+            String esPath = "";
+            if (path.length() > 4) {
+                esPath = path.substring(4);
+            };
 
-                response.flushBuffer();
+            String url = server + esPath + query;
 
-            } catch (UnsupportedEncodingException ex) {
-                java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
-            } 
+            HttpURLConnect http = new HttpURLConnect();
+            http.setRequestBody(requestBody);
+
+            InputStream is = null; //= http.getGetStream(server + esPath + query);
+
+            if (requestMethod.equals("GET")) {
+                is = http.openInputStream(url, HttpURLConnect.GET);
+            } else if (requestMethod.equals("POST")) {
+                is = http.openInputStream(url, HttpURLConnect.POST);
+            } else if (requestMethod.equals("HEAD")) {
+                is = http.openInputStream(url, HttpURLConnect.HEAD);
+            }
+
+            //else return problem
+            String contentType = http.getContentType();
+
+            IOUtils.copy(is, response.getOutputStream());
+
+            response.setContentType(contentType);
+            //TODO in the future copy headers
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            //response.setHeader("Content-Type", "application/json; charset=UTF-8");
+            response.setHeader("Content-Type", "application/json");
+
+            response.flushBuffer();
+
+        } catch (UnsupportedEncodingException ex) {
+            java.util.logging.Logger.getLogger(SearchController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
 
-        /**
-         * Search for datasets
-         *
-         * @param id
-         * @param request
-         * @param response
-         * @return Metadata about the catalog in one of the acceptable formats
-         * (RDF Turtle, JSON-LD, RDF XML and RDF N3)
-         *
-         * @throws IllegalStateException
-         * @throws FairSearchServiceException
-         */
-        @ApiOperation(value = "Word suggestion")
-        @RequestMapping(value = "/ws", method = RequestMethod.GET,
-                produces = {"text/json",
-                    "application/ld+json"}
-        )
-        @ResponseStatus(HttpStatus.OK)
-        public String wordSuggest
-        (
-    //public List<WordSuggest> wordSuggest(
-    		@RequestParam(value = "s", defaultValue = "a")
-        String s,
-                HttpServletRequest request
-        ,
-            HttpServletResponse response) throws FairSearchServiceException
-        {
+    /**
+     * Search for datasets
+     *
+     * @param id
+     * @param request
+     * @param response
+     * @return Metadata about the catalog in one of the acceptable formats (RDF
+     * Turtle, JSON-LD, RDF XML and RDF N3)
+     *
+     * @throws IllegalStateException
+     * @throws FairSearchServiceException
+     */
+    @ApiOperation(value = "Word suggestion")
+    @RequestMapping(value = "/ws", method = RequestMethod.GET
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public String wordSuggest(
+            //public List<WordSuggest> wordSuggest(
+            @RequestParam(value = "s", defaultValue = "a") String s,
+            HttpServletRequest request,
+             HttpServletResponse response) throws FairSearchServiceException {
 
-            //ESClient esclient = new JestESClient();
-            //return esclient.wordSuggest(s);
-            //return esclient.wordSuggest(s, WordSuggest.class);          
-            return null;
+        //ESClient esclient = new JestESClient();
+        //return esclient.wordSuggest(s);
+        //return esclient.wordSuggest(s, WordSuggest.class);          
+        return null;
 
-        }
-
-    
+    }
 
     private String doSearch(String search, String site) {
         //private List<SearchDataset> doSearch(String search, String site){
